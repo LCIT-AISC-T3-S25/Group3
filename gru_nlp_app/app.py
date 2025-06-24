@@ -12,16 +12,24 @@ with open('tokenizer.pkl', 'rb') as handle:
 # Load model
 model = load_model('gru_model.keras')
 
+# Sentiment mapping
+sentiment_map = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
+
 # Flask setup
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return 'GRU Sentiment Model is ready! Send POST to /predict'
+    return 'GRU Sentiment Model is ready! Send POST request to /predict'
 
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
+
+    # Input validation
+    if not data or 'text' not in data:
+        return jsonify({'error': 'Please provide input text under the "text" key'}), 400
+
     text = data['text']
 
     # Preprocess
@@ -32,10 +40,9 @@ def predict():
     prediction = model.predict(padded)
     sentiment = np.argmax(prediction)
 
-    sentiment_map = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
-
     return jsonify({
         'text': text,
+        'predicted_class': int(sentiment),
         'prediction': sentiment_map[sentiment],
         'raw_scores': prediction.tolist()
     })
