@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  cnn_cv_app:
+    build:
+      context: ./cnn_cv_app
+    container_name: cnn_cv_app
+    ports:
+      - "8001:5000"
+
+  gru_nlp_app:
+    build:
+      context: ./gru_nlp_app
+    container_name: gru_nlp_app
+    ports:
+      - "8002:5000"
+
+  lstm_nlp_app:
+    build:
+      context: ./lstm_nlp_app
+    container_name: lstm_nlp_app
+    ports:
+      - "8003:5000"
+
+  vgg_cv_app:
+    build:
+      context: ./vgg_cv_app
+    container_name: vgg_cv_app
+    ports:
+      - "8004:5000"
