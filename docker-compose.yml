@@ -6,7 +6,7 @@ services:
       context: ./cnn_cv_app
     container_name: cnn_cv_app
     ports:
-      - "8001:5000"
+      - "8001:8000"
 
   gru_nlp_app:
     build:
