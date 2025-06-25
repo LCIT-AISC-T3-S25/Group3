@@ -1,10 +1,12 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # ✅ Import CORS
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import pickle
 
-# ✅ Define app before using any route
+# ✅ Define app and enable CORS
 app = Flask(__name__)
+CORS(app)  # ✅ Allow CORS for all routes and origins
 
 # Load trained model
 model = load_model("tuned_lstm_word2vec_model.h5")
@@ -35,7 +37,6 @@ def predict():
         padded = pad_sequences(seq, maxlen=MAX_LEN)
         probs = model.predict(padded)[0]
 
-        # binary output
         if probs[0] > 0.6:
             sentiment = "positive"
         elif probs[0] < 0.4:
@@ -53,7 +54,6 @@ def predict():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
-
 
 
 if __name__ == "__main__":
