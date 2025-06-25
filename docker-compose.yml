@@ -27,7 +27,8 @@ services:
       context: ./vgg_cv_app
     container_name: vgg_cv_app
     ports:
-      - "8004:5000"
+      - "8004:8000"
+
 
   frontend:
     build:
