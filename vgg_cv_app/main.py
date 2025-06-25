@@ -1,6 +1,7 @@
 print("=== Starting FastAPI app ===")
 
 from fastapi import FastAPI, File, UploadFile, Form
+from fastapi.middleware.cors import CORSMiddleware  # ✅ Add this
 print("=== Imported FastAPI ===")
 from tensorflow.keras.models import load_model
 print("=== Imported load_model ===")
@@ -15,6 +16,15 @@ model = load_model("vgg16_meta_model.h5")
 print("=== Model loaded! ===")
 
 app = FastAPI()
+
+# ✅ Enable CORS for all domains and headers
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or restrict in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def read_root():
