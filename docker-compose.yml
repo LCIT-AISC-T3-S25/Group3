@@ -41,4 +41,4 @@ services:
       - cnn_cv_app
       - gru_nlp_app
       - lstm_nlp_app
-      # - vgg_cv_app   <-- Comment this line too
+      - vgg_cv_app
