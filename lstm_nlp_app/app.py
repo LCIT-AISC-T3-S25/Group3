@@ -3,6 +3,7 @@ from flask_cors import CORS  # ✅ Import CORS
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import pickle
+import numpy as np
 
 # ✅ Define app and enable CORS
 app = Flask(__name__)
@@ -17,7 +18,7 @@ with open("tokenizer.pkl", "rb") as f:
 
 # Configuration
 MAX_LEN = 100
-labels = ['negative', 'neutral', 'positive']
+labels = ['very negative', 'negative', 'neutral', 'positive', 'very positive']
 
 # Root route for browser check
 @app.route("/", methods=["GET"])
@@ -42,17 +43,14 @@ def predict():
         padded = pad_sequences(seq, maxlen=MAX_LEN)
         probs = model.predict(padded)[0]
 
-        if probs[0] > 0.6:
-            sentiment = "positive"
-        elif probs[0] < 0.4:
-            sentiment = "negative"
-        else:
-            sentiment = "neutral"
+        pred_idx = int(np.argmax(probs))
+        sentiment = labels[pred_idx]
+        probability = float(probs[pred_idx])
 
         return jsonify({
             "input": text,
             "sentiment": sentiment,
-            "probability": float(probs[0])
+            "probability": probability
         })
 
     except Exception as e:
