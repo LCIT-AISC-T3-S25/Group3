@@ -2,6 +2,8 @@
 
 This project hosts and serves four AI models (3 NLP/CV + 1 UI frontend) using Docker containers on a GCP Compute Engine VM. A unified frontend interacts with all the model APIs.
 
+### Dashboard For all 4 models: **https://tinyurl.com/model-dashboard**
+
 ---
 
 ## ✅ Services
