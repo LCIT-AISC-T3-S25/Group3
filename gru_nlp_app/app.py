@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # ✅ Import CORS
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
@@ -17,6 +18,7 @@ sentiment_map = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
 
 # Flask setup
 app = Flask(__name__)
+CORS(app)  # ✅ Enable CORS for all routes
 
 @app.route('/')
 def home():
