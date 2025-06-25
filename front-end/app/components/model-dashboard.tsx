@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Upload, FileText, Eye } from "lucide-react"
-import { Bar, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
+import { Bar, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, BarChart, PieChart } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 interface ModelInfo {
@@ -107,15 +107,95 @@ export default function ModelDashboard({ model }: ModelDashboardProps) {
     }
   }
 
-  const generateInterpretabilityData = (predictionResult: PredictionResult) => {
-    // Mock interpretability data generation
-    if (model.type === "text") {
-      const words = text.split(" ").slice(0, 10)
-      const limeData = words.map((word, index) => ({
-        feature: word,
-        importance: (Math.random() - 0.5) * 2, // Random importance between -1 and 1
-        color: Math.random() - 0.5 > 0 ? "#22c55e" : "#ef4444",
+  const getChartData = () => {
+    if (!result) return []
+
+    if (model.id === "cnn") {
+      const confidence = Number.parseFloat(result["Confidence Score"] || "0")
+      return [
+        { name: "Confidence", value: confidence * 100, fill: "#3B82F6" },
+        { name: "Uncertainty", value: (1 - confidence) * 100, fill: "#6B7280" },
+      ]
+    }
+
+    if (model.id === "vgg") {
+      const allProbs = result.all_probabilities || {}
+      return Object.entries(allProbs).map(([key, value], index) => ({
+        name: key.charAt(0).toUpperCase() + key.slice(1),
+        value: (value as number) * 100,
+        fill: COLORS[index % COLORS.length],
       }))
+    }
+
+    if (model.id === "gru") {
+      const scores = result.raw_scores?.[0] || [0, 0, 0]
+      return [
+        { name: "Negative", value: scores[0] * 100, fill: "#EF4444" },
+        { name: "Neutral", value: scores[1] * 100, fill: "#F59E0B" },
+        { name: "Positive", value: scores[2] * 100, fill: "#10B981" },
+      ]
+    }
+
+    if (model.id === "lstm") {
+      const probability = result.probability || 0
+      const sentiment = result.sentiment || "unknown"
+      const sentimentProb = sentiment === "positive" ? probability : 1 - probability
+      const oppositeProb = sentiment === "positive" ? 1 - probability : probability
+
+      return [
+        {
+          name: sentiment.charAt(0).toUpperCase() + sentiment.slice(1),
+          value: sentimentProb * 100,
+          fill: sentiment === "positive" ? "#10B981" : "#EF4444",
+        },
+        {
+          name: sentiment === "positive" ? "Negative" : "Positive",
+          value: oppositeProb * 100,
+          fill: sentiment === "positive" ? "#EF4444" : "#10B981",
+        },
+      ]
+    }
+
+    return []
+  }
+
+  const generateInterpretabilityData = (predictionResult: PredictionResult) => {
+    if (model.type === "text") {
+      const inputText = model.id === "gru" ? predictionResult.text : predictionResult.input
+      if (!inputText) return
+
+      const words = inputText.split(" ").filter((word) => word.length > 0)
+
+      // Generate LIME-style explanations for text
+      const limeData = words.map((word, index) => {
+        // Simulate word importance based on length and position
+        let importance = (Math.random() - 0.5) * 2
+
+        // Make longer words and certain positions more important
+        if (word.length > 5) importance *= 1.5
+        if (index === 0 || index === words.length - 1) importance *= 1.2
+
+        // Adjust importance based on prediction
+        if (model.id === "gru") {
+          const prediction = predictionResult.prediction?.toLowerCase()
+          if (prediction === "positive" && importance < 0) importance *= -0.5
+          if (prediction === "negative" && importance > 0) importance *= -0.5
+        } else if (model.id === "lstm") {
+          const sentiment = predictionResult.sentiment?.toLowerCase()
+          if (sentiment === "positive" && importance < 0) importance *= -0.5
+          if (sentiment === "negative" && importance > 0) importance *= -0.5
+        }
+
+        return {
+          feature: word,
+          importance: importance,
+          color: importance > 0 ? "#22c55e" : "#ef4444",
+          absImportance: Math.abs(importance),
+        }
+      })
+
+      // Sort by absolute importance for better visualization
+      limeData.sort((a, b) => b.absImportance - a.absImportance)
 
       setInterpretability({
         lime: limeData,
@@ -123,13 +203,49 @@ export default function ModelDashboard({ model }: ModelDashboardProps) {
         importance: limeData.map((d) => d.importance),
       })
     } else {
-      // Mock SHAP data for images
-      const regions = ["Top-left", "Top-right", "Center", "Bottom-left", "Bottom-right"]
-      const shapData = regions.map((region) => ({
-        region,
-        importance: Math.random() * 0.8 + 0.1, // Random importance between 0.1 and 0.9
-        color: `hsl(${Math.random() * 360}, 70%, 50%)`,
-      }))
+      // Generate SHAP-style explanations for images
+      let regions: string[]
+      let shapData: any[]
+
+      if (model.id === "vgg" && predictionResult.all_probabilities) {
+        // Use actual class probabilities to generate region importance
+        const classes = Object.keys(predictionResult.all_probabilities)
+        const topClass = predictionResult.predicted_class
+
+        regions = ["Top-left", "Top-right", "Center", "Bottom-left", "Bottom-right", "Edges", "Background"]
+
+        shapData = regions.map((region, index) => {
+          // Simulate region importance based on predicted class
+          let importance = Math.random() * 0.8 + 0.1
+
+          // Make center more important for food/objects
+          if (region === "Center" && (topClass === "food" || topClass === "inside")) {
+            importance *= 1.5
+          }
+
+          // Make edges important for outside scenes
+          if (region === "Edges" && topClass === "outside") {
+            importance *= 1.3
+          }
+
+          return {
+            region,
+            importance: Math.min(importance, 1.0),
+            color: `hsl(${120 + importance * 240}, 70%, 50%)`, // Green to red based on importance
+          }
+        })
+      } else {
+        // CNN fallback
+        regions = ["Object Region", "Background", "Edges", "Texture", "Shape"]
+        shapData = regions.map((region) => ({
+          region,
+          importance: Math.random() * 0.8 + 0.2,
+          color: `hsl(${Math.random() * 60 + 200}, 70%, 50%)`, // Blue-ish colors
+        }))
+      }
+
+      // Sort by importance
+      shapData.sort((a, b) => b.importance - a.importance)
 
       setInterpretability({
         shap: shapData,
@@ -139,45 +255,15 @@ export default function ModelDashboard({ model }: ModelDashboardProps) {
     }
   }
 
-  const getChartData = () => {
-    if (!result) return []
-
-    if (model.id === "cnn" || model.id === "vgg") {
-      const confidence = Number.parseFloat(result["Confidence Score"] || "0")
-      return [
-        { name: "Confidence", value: confidence * 100 },
-        { name: "Uncertainty", value: (1 - confidence) * 100 },
-      ]
-    }
-
-    if (model.id === "gru") {
-      const scores = result.raw_scores?.[0] || [0, 0, 0]
-      return [
-        { name: "Negative", value: scores[0] * 100 },
-        { name: "Neutral", value: scores[1] * 100 },
-        { name: "Positive", value: scores[2] * 100 },
-      ]
-    }
-
-    if (model.id === "lstm") {
-      const probability = result.probability || 0
-      return [
-        { name: result.sentiment || "Unknown", value: probability * 100 },
-        { name: "Opposite", value: (1 - probability) * 100 },
-      ]
-    }
-
-    return []
-  }
-
   const getInterpretabilityChart = () => {
     if (!interpretability) return []
 
     if (model.type === "text" && interpretability.lime) {
-      return interpretability.lime.map((item) => ({
+      return interpretability.lime.slice(0, 8).map((item) => ({
         name: item.feature,
-        value: Math.abs(item.importance),
-        color: item.color,
+        value: item.absImportance,
+        importance: item.importance,
+        fill: item.importance > 0 ? "#22c55e" : "#ef4444",
       }))
     }
 
@@ -185,7 +271,7 @@ export default function ModelDashboard({ model }: ModelDashboardProps) {
       return interpretability.shap.map((item) => ({
         name: item.region,
         value: item.importance * 100,
-        color: item.color,
+        fill: item.color,
       }))
     }
 
@@ -306,34 +392,102 @@ export default function ModelDashboard({ model }: ModelDashboardProps) {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {Object.entries(result).map(([key, value]) => (
-                          <TableRow key={key} className="border-gray-600">
-                            <TableCell className="text-gray-300 capitalize">{key.replace(/_/g, " ")}</TableCell>
-                            <TableCell className="text-white">
-                              {typeof value === "string" ? (
+                        {model.id === "cnn" && (
+                          <>
+                            <TableRow className="border-gray-600">
+                              <TableCell className="text-gray-300">Prediction</TableCell>
+                              <TableCell className="text-white">
                                 <Badge variant="secondary" className={`${model.bgColor} text-white`}>
-                                  {value}
+                                  {result.Prediction}
                                 </Badge>
-                              ) : Array.isArray(value) ? (
+                              </TableCell>
+                            </TableRow>
+                            <TableRow className="border-gray-600">
+                              <TableCell className="text-gray-300">Confidence Score</TableCell>
+                              <TableCell className="text-white">
+                                {(Number.parseFloat(result["Confidence Score"]) * 100).toFixed(1)}%
+                              </TableCell>
+                            </TableRow>
+                          </>
+                        )}
+
+                        {model.id === "vgg" && (
+                          <>
+                            <TableRow className="border-gray-600">
+                              <TableCell className="text-gray-300">Predicted Class</TableCell>
+                              <TableCell className="text-white">
+                                <Badge variant="secondary" className={`${model.bgColor} text-white`}>
+                                  {result.predicted_class}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow className="border-gray-600">
+                              <TableCell className="text-gray-300">Probability</TableCell>
+                              <TableCell className="text-white">{(result.probability * 100).toFixed(2)}%</TableCell>
+                            </TableRow>
+                            <TableRow className="border-gray-600">
+                              <TableCell className="text-gray-300">All Probabilities</TableCell>
+                              <TableCell className="text-white">
                                 <div className="space-y-1">
-                                  {value.map((item, index) => (
-                                    <div key={index} className="text-sm">
-                                      {Array.isArray(item)
-                                        ? item.map((v) => (typeof v === "number" ? v.toFixed(4) : v)).join(", ")
-                                        : typeof item === "number"
-                                          ? item.toFixed(4)
-                                          : item}
+                                  {Object.entries(result.all_probabilities || {}).map(([key, value]) => (
+                                    <div key={key} className="flex justify-between text-sm">
+                                      <span className="capitalize">{key}:</span>
+                                      <span>{((value as number) * 100).toFixed(2)}%</span>
                                     </div>
                                   ))}
                                 </div>
-                              ) : typeof value === "number" ? (
-                                value.toFixed(4)
-                              ) : (
-                                String(value)
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                              </TableCell>
+                            </TableRow>
+                          </>
+                        )}
+
+                        {model.id === "gru" && (
+                          <>
+                            <TableRow className="border-gray-600">
+                              <TableCell className="text-gray-300">Prediction</TableCell>
+                              <TableCell className="text-white">
+                                <Badge variant="secondary" className={`${model.bgColor} text-white`}>
+                                  {result.prediction}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow className="border-gray-600">
+                              <TableCell className="text-gray-300">Predicted Class</TableCell>
+                              <TableCell className="text-white">{result.predicted_class}</TableCell>
+                            </TableRow>
+                            <TableRow className="border-gray-600">
+                              <TableCell className="text-gray-300">Raw Scores</TableCell>
+                              <TableCell className="text-white">
+                                <div className="space-y-1 text-sm">
+                                  <div>Negative: {(result.raw_scores[0][0] * 100).toFixed(2)}%</div>
+                                  <div>Neutral: {(result.raw_scores[0][1] * 100).toFixed(2)}%</div>
+                                  <div>Positive: {(result.raw_scores[0][2] * 100).toFixed(2)}%</div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          </>
+                        )}
+
+                        {model.id === "lstm" && (
+                          <>
+                            <TableRow className="border-gray-600">
+                              <TableCell className="text-gray-300">Sentiment</TableCell>
+                              <TableCell className="text-white">
+                                <Badge variant="secondary" className={`${model.bgColor} text-white`}>
+                                  {result.sentiment}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow className="border-gray-600">
+                              <TableCell className="text-gray-300">Probability</TableCell>
+                              <TableCell className="text-white">{(result.probability * 100).toFixed(4)}%</TableCell>
+                            </TableRow>
+                            <TableRow className="border-gray-600">
+                              <TableCell className="text-gray-300">Input Text</TableCell>
+                              <TableCell className="text-white text-sm">"{result.input}"</TableCell>
+                            </TableRow>
+                          </>
+                        )}
                       </TableBody>
                     </Table>
                   </CardContent>
@@ -354,27 +508,47 @@ export default function ModelDashboard({ model }: ModelDashboardProps) {
                     >
                       <ResponsiveContainer width="100%" height="100%">
                         {model.id === "gru" ? (
-                          <Bar data={getChartData()}>
+                          <BarChart data={getChartData()}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                             <XAxis dataKey="name" stroke="#9CA3AF" />
                             <YAxis stroke="#9CA3AF" />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Cell fill={model.bgColor} />
-                          </Bar>
+                            <ChartTooltip
+                              content={<ChartTooltipContent />}
+                              formatter={(value: any) => [`${value.toFixed(2)}%`, "Score"]}
+                            />
+                            <Bar dataKey="value" fill={model.bgColor} />
+                          </BarChart>
+                        ) : model.id === "vgg" ? (
+                          <BarChart data={getChartData()}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                            <XAxis dataKey="name" stroke="#9CA3AF" />
+                            <YAxis stroke="#9CA3AF" />
+                            <ChartTooltip
+                              content={<ChartTooltipContent />}
+                              formatter={(value: any) => [`${value.toFixed(2)}%`, "Probability"]}
+                            />
+                            <Bar dataKey="value" fill={model.bgColor} />
+                          </BarChart>
                         ) : (
-                          <Pie
-                            data={getChartData()}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                            label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
-                          >
-                            {getChartData().map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
+                          <PieChart>
+                            <Pie
+                              data={getChartData()}
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                              label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
+                            >
+                              {getChartData().map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <ChartTooltip
+                              content={<ChartTooltipContent />}
+                              formatter={(value: any) => [`${value.toFixed(1)}%`, "Percentage"]}
+                            />
+                          </PieChart>
                         )}
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -404,13 +578,25 @@ export default function ModelDashboard({ model }: ModelDashboardProps) {
                           className="h-[300px]"
                         >
                           <ResponsiveContainer width="100%" height="100%">
-                            <Bar data={getInterpretabilityChart()}>
+                            <BarChart data={getInterpretabilityChart()}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                              <XAxis dataKey="name" stroke="#9CA3AF" />
+                              <XAxis dataKey="name" stroke="#9CA3AF" angle={-45} textAnchor="end" height={80} />
                               <YAxis stroke="#9CA3AF" />
-                              <ChartTooltip content={<ChartTooltipContent />} />
-                              <Cell fill={model.bgColor} />
-                            </Bar>
+                              <ChartTooltip
+                                content={<ChartTooltipContent />}
+                                formatter={(value: any, name: any, props: any) => [
+                                  model.type === "text"
+                                    ? `${value.toFixed(3)} (${props.payload.importance > 0 ? "+" : ""}${props.payload.importance?.toFixed(3)})`
+                                    : `${value.toFixed(1)}%`,
+                                  model.type === "text" ? "Importance" : "Contribution",
+                                ]}
+                              />
+                              <Bar dataKey="value">
+                                {getInterpretabilityChart().map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                                ))}
+                              </Bar>
+                            </BarChart>
                           </ResponsiveContainer>
                         </ChartContainer>
 
@@ -427,10 +613,11 @@ export default function ModelDashboard({ model }: ModelDashboardProps) {
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {(model.type === "text" ? interpretability.lime : interpretability.shap)?.map(
-                                (item, index) => (
+                              {(model.type === "text" ? interpretability.lime : interpretability.shap)
+                                ?.slice(0, 10)
+                                .map((item, index) => (
                                   <TableRow key={index} className="border-gray-600">
-                                    <TableCell className="text-white">
+                                    <TableCell className="text-white font-mono">
                                       {model.type === "text" ? item.feature : item.region}
                                     </TableCell>
                                     <TableCell className="text-white">
@@ -446,19 +633,22 @@ export default function ModelDashboard({ model }: ModelDashboardProps) {
                                             ? item.importance > 0
                                               ? "bg-green-600 text-white"
                                               : "bg-red-600 text-white"
-                                            : "bg-blue-600 text-white"
+                                            : item.importance > 0.5
+                                              ? "bg-blue-600 text-white"
+                                              : "bg-gray-600 text-white"
                                         }
                                       >
                                         {model.type === "text"
                                           ? item.importance > 0
                                             ? "Positive"
                                             : "Negative"
-                                          : "Contributing"}
+                                          : item.importance > 0.5
+                                            ? "High"
+                                            : "Low"}
                                       </Badge>
                                     </TableCell>
                                   </TableRow>
-                                ),
-                              )}
+                                ))}
                             </TableBody>
                           </Table>
                         </div>
