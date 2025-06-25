@@ -1,5 +1,0 @@
-flask
-flask-cors
-tensorflow
-numpy
-pickle-mixin
