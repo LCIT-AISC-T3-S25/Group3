@@ -1,33 +1,30 @@
-# 1. Base image with Node
+# 1. Build Stage
 FROM node:18-alpine AS builder
 
-# 2. Set working directory
+# Set working directory
 WORKDIR /app
 
-# 3. Install dependencies
+# Install dependencies
 COPY package.json package-lock.json ./
 RUN npm install --legacy-peer-deps
 
-# 4. Copy the rest of the code
+# Copy all files and build the app
 COPY . .
-
-# 5. Build the Next.js app
 RUN npm run build
 
-# 6. Use a lightweight production image
+# 2. Production Runner Stage
 FROM node:18-alpine AS runner
+
 WORKDIR /app
-
 ENV NODE_ENV=production
+ENV PORT=3000
 
-# Copy needed files from builder
+# Copy only necessary artifacts from builder stage
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/next.config.js ./next.config.js
-COPY --from=builder /app/.env ./.env
 
+# Expose port and define start command
 EXPOSE 3000
-
 CMD ["npm", "start"]
