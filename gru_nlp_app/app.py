@@ -18,7 +18,7 @@ sentiment_map = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
 
 # Flask setup
 app = Flask(__name__)
-CORS(app)  # ✅ Enable CORS for all routes
+CORS(app)  # Enable CORS for all routes
 
 @app.route('/')
 def home():
@@ -40,6 +40,9 @@ def predict():
 
     # Predict
     prediction = model.predict(padded)
+    
+    print("Prediction scores:", prediction.tolist())
+    
     sentiment = np.argmax(prediction)
 
     return jsonify({
@@ -50,4 +53,5 @@ def predict():
     })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
+
