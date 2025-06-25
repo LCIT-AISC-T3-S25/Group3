@@ -19,6 +19,11 @@ with open("tokenizer.pkl", "rb") as f:
 MAX_LEN = 100
 labels = ['negative', 'neutral', 'positive']
 
+# Root route for browser check
+@app.route("/", methods=["GET"])
+def home():
+    return "LSTM Sentiment Model is ready! Send POST to /predict"
+
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
@@ -57,4 +62,4 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5002)
