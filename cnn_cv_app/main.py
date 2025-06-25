@@ -1,12 +1,10 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import numpy as np
 import tensorflow as tf
 import io
-
-
-
 
 app = FastAPI(
     title="Image Classifier",
@@ -22,7 +20,16 @@ app = FastAPI(
     version="1.0"
 )
 
-#  Load the trained CNN model
+# ✅ CORS middleware to allow all origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],         # Allow all domains
+    allow_credentials=True,
+    allow_methods=["*"],         # Allow all HTTP methods
+    allow_headers=["*"],         # Allow all headers
+)
+
+# Load the trained CNN model
 model = tf.keras.models.load_model("model/cnn_model_yelp.h5")
 
 # Label mapping
@@ -34,19 +41,20 @@ label_map = {
     4: "menu 📄"
 }
 
+# ✅ Home Route (custom welcome message)
 @app.get("/")
+def read_root():
+    return {
+        "message": "Your Stylish CNN Image Classifier is running!",
+        "hint": "Visit /docs to use the visual interface and test image prediction."
+    }
+
+# ✅ Optional redirect to Swagger UI
+@app.get("/redirect")
 def redirect_to_docs():
     return RedirectResponse(url="/docs")
 
-# # Home Route
-# @app.get("/")
-# def read_root():
-#     return {
-#         "message": "Your Stylish CNN Image Classifier is running!",
-#         "hint": "Visit /docs to use the visual interface and test image prediction."
-#     }
-
-# rediction Route
+# ✅ Prediction Route
 @app.post("/predict", tags=["Predict"])
 async def predict(file: UploadFile = File(...)):
     try:
