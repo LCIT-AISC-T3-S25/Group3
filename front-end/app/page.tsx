@@ -42,13 +42,15 @@ interface ModelInfo {
   bgColor: string
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_IP;
+
 const models: ModelInfo[] = [
   {
     id: "cnn",
     name: "CNN Model",
     description: "Convolutional Neural Network for image classification",
     type: "image",
-    endpoint: "http://104.197.94.208:8001/predict",
+    endpoint: `${API_BASE}:8001/predict`,
     icon: <ImageIcon className="h-8 w-8" />,
     color: "text-blue-400",
     bgColor: "bg-blue-600",
@@ -58,7 +60,7 @@ const models: ModelInfo[] = [
     name: "GRU Model",
     description: "Gated Recurrent Unit for sentiment analysis",
     type: "text",
-    endpoint: "http://104.197.94.208:8002/predict",
+    endpoint: `${API_BASE}:8002/predict`,
     icon: <Brain className="h-8 w-8" />,
     color: "text-green-400",
     bgColor: "bg-green-600",
@@ -68,7 +70,7 @@ const models: ModelInfo[] = [
     name: "LSTM Model",
     description: "Long Short-Term Memory for sentiment analysis",
     type: "text",
-    endpoint: "http://104.197.94.208:8003/predict",
+    endpoint: `${API_BASE}:8003/predict`,
     icon: <MessageSquare className="h-8 w-8" />,
     color: "text-purple-400",
     bgColor: "bg-purple-600",
@@ -78,12 +80,13 @@ const models: ModelInfo[] = [
     name: "VGG Model",
     description: "Visual Geometry Group for image classification",
     type: "image",
-    endpoint: "http://104.197.94.208:8004/predict",
+    endpoint: `${API_BASE}:8004/predict`,
     icon: <BarChart3 className="h-8 w-8" />,
     color: "text-orange-400",
     bgColor: "bg-orange-600",
   },
-]
+];
+
 
 export default function Dashboard() {
   const [selectedModel, setSelectedModel] = useState<ModelInfo | null>(null)
