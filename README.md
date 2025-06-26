@@ -12,7 +12,8 @@ Welcome to the Group3 public repository! This repository contains a collection o
 | `natural-language-processing` | Shared utilities and experiments related to NLP tasks                      |
 | `nlp-assignment-1`            | NLP Sentiment Analysis – RNN/LSTM/GRU models on tweet data                  |
 | `nlp-assignment-2`            | NLP Fine-Tuning & Interpretability – Advanced sequence modeling             |
-| `dep-assignment-1`            | Flask-based deployment of ML models                                         |
+| `dep-assignment-1-dev`            | Flask-based deployment of ML models (dev branch)                        |
+| `dep-assignment-1`            | Flask-based deployment of ML models (test branch)                           |
 | `deployment-of-AI-solutions` | Multi-model Docker deployment with UI and containerization pipelines       |
 | `computer-vision`             | General computer vision models and interpretability notebooks               |
 
