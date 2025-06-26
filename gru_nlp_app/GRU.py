@@ -321,7 +321,7 @@ idx_to_explain = 0 # Choose an index from your test set (e.g., 0 to X_test_raw_t
 
 text_to_explain = X_test_raw_text[idx_to_explain]
 true_label = y_test_arr[idx_to_explain]
-predicted_label_probs = model_to_train.predict(X_test_for_eval[idx_to_explain:idx_to_explain+1] if isinstance(X_test_for_eval, list) else X_test_for_eval[idx_to_explain:idx_to_explain+1])
+predicted_label_probs = model_to_train.predict(X_test_for_eval[idx_to_explain:idx_to_explain+1]
 predicted_label_idx = np.argmax(predicted_label_probs, axis=1)[0]
 predicted_label_idx = np.argmax(predicted_label_probs, axis=1)[5]
 

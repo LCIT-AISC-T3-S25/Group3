@@ -97,14 +97,6 @@ print("Output layer weights shape:", [w.shape for w in output_weights])
 
 import json
 
-{
-  "0": "inside",
-  "1": "food",
-  "2": "outside",
-  "3": "drink",
-  "4": "menu"
-}
-
 with open("label_map.json", "w") as f:
     json.dump(label_map, f)
 
