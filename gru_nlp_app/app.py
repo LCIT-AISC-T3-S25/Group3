@@ -5,6 +5,7 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import pickle
+from config import APP_HOST, APP_PORT
 
 # Load tokenizer
 with open('tokenizer.pkl', 'rb') as handle:
@@ -18,7 +19,7 @@ sentiment_map = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
 
 # Flask setup
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)  # ✅ Enable CORS for all routes
 
 @app.route('/')
 def home():
@@ -40,9 +41,6 @@ def predict():
 
     # Predict
     prediction = model.predict(padded)
-    
-    print("Prediction scores:", prediction.tolist())
-    
     sentiment = np.argmax(prediction)
 
     return jsonify({
@@ -53,5 +51,4 @@ def predict():
     })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
-
+    app.run(host=APP_HOST, port=APP_PORT, debug=True)

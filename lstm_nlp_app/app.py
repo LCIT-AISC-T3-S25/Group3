@@ -4,6 +4,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import pickle
 import numpy as np
+from config import APP_HOST, APP_PORT
 
 # ✅ Define app and enable CORS
 app = Flask(__name__)
@@ -60,4 +61,4 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host=APP_HOST, port=APP_PORT)
