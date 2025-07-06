@@ -1,4 +1,5 @@
-## Git LFS Setup
+# Steps before using these files
+## Step 1: Git LFS Setup
 
 Because our `X_train.csv` file is large (>100 MB), it’s stored in Git LFS. Before you run any model code, make sure to install and pull the LFS objects:
 
@@ -26,7 +27,7 @@ git lfs pull               # downloads X_train.csv into data_preprocessing/
 
 You only need to run ```git lfs install``` once; after that a simple ```git pull``` will keep your large files in sync.
 
-## Starter Code for Model usage
+## Step 2: Starter Code for Model usage 
 #### (Boiler Plate with csv imports and label encoder mapping to it with a Logistic Regression Example)
 
 ```
