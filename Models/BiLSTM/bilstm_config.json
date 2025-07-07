@@ -1,0 +1,12 @@
+{
+    "embedding_dim": 128,
+    "hidden_dim": 256,
+    "output_dim": 3,
+    "num_layers": 2,
+    "dropout": 0.5,
+    "bidirectional": true,
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "batch_size": 64,
+    "num_epochs": 10
+}
