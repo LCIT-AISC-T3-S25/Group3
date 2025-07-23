@@ -1,7 +1,8 @@
 # Group3 – AI/ML Assignments Repository
 
-Welcome to the Group3 public repository! This repository contains a collection of AI and Machine Learning projects and assignments completed as part of our coursework at Loyalist College.
-Each branch focuses on a different area of AI including NLP, Computer Vision, Model Deployment, and more.
+Welcome to the Group3 public repository!
+This repo contains a collection of AI and Machine Learning projects completed as part of our coursework at Loyalist College.
+Each branch showcases a specific area of AI—ranging from Natural Language Processing and Computer Vision to Deployment and Generative Modeling.
 
 ## 🔀 Branch Overview
 
@@ -24,15 +25,33 @@ Each branch focuses on a different area of AI including NLP, Computer Vision, Mo
 
 ## 🚀 Key Features
 
-- Projects using CNNs, RNNs, GRUs, LSTMs, and transfer learning
-- Interpretability using SHAP and LIME
-- Model deployment with Flask, Streamlit, Docker, and FastAPI
-- Data preprocessing pipelines and tuning notebooks
-- Git branching for modular collaboration
+- ✅ Classic ML models: kNN, SVM, DNN
+- 🔍 CNNs, RNNs, GRUs, LSTMs with structured experiments
+- 🧠 Generative Models: DCGAN, VAE, WGAN, DDPM, GLIDE, etc.
+- 🧪 NLP Pipelines: Regex, LSTM, Transformer, RAG Chatbots
+- 🛠️ Interpretability: LIME, SHAP for CV & NLP models
+- 🌐 Deployment: Flask, FastAPI, Streamlit, Docker, GitHub
+- 📊 Modular Git branching for clean team collaboration
 
 ## 🧠 Tech Stack
 
-- **Languages**: Python, HTML, CSS
-- **Libraries**: TensorFlow, PyTorch, Keras, Scikit-learn, OpenCV, Pandas, Matplotlib, Seaborn
-- **Tools**: Flask, Docker, FastAPI, Streamlit, Jupyter, Git
-- **Deployment**: GitHub, ngrok, VS Code, Google Colab
+**Languages:**  
+`Python`, `HTML`, `CSS`
+
+**Libraries & Frameworks:**  
+`TensorFlow`, `PyTorch`, `Keras`, `Scikit-learn`, `OpenCV`, `Pandas`, `Matplotlib`, `Seaborn`, `librosa`
+
+**Deployment Tools:**  
+`Flask`, `FastAPI`, `Streamlit`, `Docker`, `ngrok`
+
+**Dev Environment:**  
+`Jupyter Notebook`, `VS Code`, `Google Colab`, `GitHub`
+
+## 📂 Usage
+
+Clone this repo and switch to the desired branch:
+
+```bash
+git clone https://github.com/your-org/group3-ai-ml-assignments.git
+cd group3-ai-ml-assignments
+git checkout branch-name
