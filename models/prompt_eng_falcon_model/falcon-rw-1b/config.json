@@ -1,0 +1,40 @@
+{
+  "activation": "gelu",
+  "alibi": true,
+  "apply_residual_connection_post_layernorm": false,
+  "architectures": [
+    "FalconForCausalLM"
+  ],
+  "attention_dropout": 0.0,
+  "auto_map": {
+    "AutoConfig": "configuration_falcon.FalconConfig",
+    "AutoModel": "modeling_falcon.FalconModel",
+    "AutoModelForCausalLM": "modeling_falcon.FalconForCausalLM",
+    "AutoModelForQuestionAnswering": "modeling_falcon.FalconForQuestionAnswering",
+    "AutoModelForSequenceClassification": "modeling_falcon.FalconForSequenceClassification",
+    "AutoModelForTokenClassification": "modeling_falcon.FalconForTokenClassification"
+  },
+  "bias": true,
+  "bos_token_id": 1,
+  "eos_token_id": 2,
+  "ffn_hidden_size": 8192,
+  "hidden_dropout": 0.0,
+  "hidden_size": 2048,
+  "initializer_range": 0.02,
+  "layer_norm_epsilon": 1e-05,
+  "max_position_embeddings": 2048,
+  "model_type": "falcon",
+  "multi_query": false,
+  "new_decoder_architecture": false,
+  "num_attention_heads": 32,
+  "num_hidden_layers": 24,
+  "num_kv_heads": 32,
+  "num_ln_in_parallel_attn": null,
+  "parallel_attn": false,
+  "rope_scaling": null,
+  "rope_theta": 10000.0,
+  "torch_dtype": "float16",
+  "transformers_version": "4.53.2",
+  "use_cache": true,
+  "vocab_size": 50304
+}
