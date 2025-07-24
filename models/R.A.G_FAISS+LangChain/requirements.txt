@@ -5,3 +5,7 @@ sentence-transformers>=2.2.2
 tqdm>=4.66.1
 python-dotenv>=1.0.0
 transformers>=4.40.0
+rouge-score
+bert-score
+groq
+langchain_groq
