@@ -46,19 +46,19 @@
 1. **Build the Docker image:**
 
     ```bash
-    docker build -t mymodelapi .
+    docker build -t glide-api .
     ```
 
 2. **Run the container:**
 
     ```bash
-    docker run -d -p 8000:8000 --name mymodelcontainer mymodelapi
+    docker run -d -p 8000:8000 --name mymodelcontainer glide-api
     ```
 
 3. **(Optional) Mount a volume for persistent data (if needed):**
 
     ```bash
-    docker run -d -p 8000:8000 -v %cd%/model:/app/model --name mymodelcontainer mymodelapi
+    docker run -d -p 8000:8000 -v %cd%/model:/app/model --name mymodelcontainer glide-api
     ```
 
 4. **Test the API:**
