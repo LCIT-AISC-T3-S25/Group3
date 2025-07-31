@@ -87,3 +87,31 @@
 - For any issues, please check requirements or contact Advait
 
 ---
+
+## Creating and running venv for Gan Model
+
+- python -m venv gan_venv # creating venv for gan_model
+- source gan_venv/Script/activate
+(gan_venv)
+
+## Creating .env (for removing hardcoding)
+- nano .env
+
+## Creating .gitignore
+- adding .env, .gitignore, and gan_venv inside .gitignore file
+
+## Updating app.py model file replacing hard coded parameters loading config from .env
+load_dotenv()
+## Load config from .env
+APP_HOST = os.getenv("APP_HOST")
+APP_PORT = int(os.getenv("APP_PORT"))
+GENERATOR_PATH = os.getenv("GENERATOR_PATH")
+DEVICE_TYPE = os.getenv("DEVICE", "cpu")
+
+APP_HOST=0.0.0.0
+APP_PORT=5002
+DEVICE=cpu
+GENERATOR_PATH=wgangp_generator.pth
+CRITIC_PATH=wgan_gp_critic.pth
+
+	
