@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - gan_model
+      - glide_model
+      - rag_model
+      - transformer_model  # If used
+
+  gan_model:
+    build: ./models/gan_model
+    ports:
+      - "5002:5002"
+    env_file:
+      - ./models/gan_model/.env
+
+  glide_model:
+    build: ./models/glide
+    ports:
+      - "8001:8000"
+
+  rag_model:
+    build: ./models/rag
+    ports:
+      - "5000:5000"
+
+  transformer_model:
+    build: ./models/transformer_model
+    ports:
+      - "8004:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gan_model
+      - glide_model
+      - rag_model
+      - transformer_model
+    environment:
+      - NEXT_PUBLIC_TRANSFORMER_API_URL=http://transformer_model:8000
+      - NEXT_PUBLIC_GAN_API_URL=http://gan_model:5002
+      - NEXT_PUBLIC_GLIDE_API_URL=http://glide_model:8000
+      - NEXT_PUBLIC_RAG_API_URL=http://rag_model:5000
