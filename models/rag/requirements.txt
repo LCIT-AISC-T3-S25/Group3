@@ -1,0 +1,6 @@
+flask
+faiss-cpu
+pyyaml
+pickle
+numpy
+scikit-learn

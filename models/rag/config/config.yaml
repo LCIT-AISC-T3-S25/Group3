@@ -1,0 +1,5 @@
+groq_model: "llama-3.1-8b-instant"   # Updated from mixtral
+retriever:
+  k: 5
+embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+faiss_path: "./faiss_index_bioasq_full"
