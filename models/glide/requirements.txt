@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+torch
+transformers
+Pillow
+tqdm
+git+https://github.com/openai/glide-text2im.git
